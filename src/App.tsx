@@ -1,8 +1,25 @@
 import { useState, useEffect } from 'react';
+
 import { getSearchResults } from './api';
+import type { ISearchResultItem } from './type';
 import SearchForm from './components/SearchForm';
 import SearchResultItem from './components/SearchResultItem';
-import type { ISearchResultItem } from './type';
+
+let cache: { [key: string]: ISearchResultItem[] } = {};
+
+const setCache = (searchWord: string, searchResult: ISearchResultItem[]) => {
+  // cache = {
+  //   ...cache,
+  //   [searchWord]: searchResult,
+  // };
+  cache[searchWord] = searchResult;
+};
+
+const getCache = (searchWord: string) => {
+  // const cacheSearchResult = cache[searchWord];
+  // if (!cacheSearchResult) throw Error('nothing cache search result');
+  return cache[searchWord];
+};
 
 function App() {
   let timer: any;
@@ -19,11 +36,20 @@ function App() {
 
   const onSubmit = () => {
     if (!searchWordInput) return;
+
     if (timer) clearTimeout(timer);
+
     timer = setTimeout(() => {
-      getSearchResults(searchWordInput).then((data) => {
-        setSearchResult(data);
-      });
+      let searchReulst: ISearchResultItem[] = getCache(searchWordInput);
+      if (!searchReulst) {
+        getSearchResults(searchWordInput).then((data) => {
+          searchReulst = data;
+          setSearchResult(searchReulst);
+          setCache(searchWordInput, searchReulst);
+        });
+        return;
+      }
+      setSearchResult(searchReulst);
     }, 500);
   };
 
@@ -32,11 +58,20 @@ function App() {
       setSearchResult([]);
       return;
     }
+
+    let searchResult: ISearchResultItem[] = getCache(searchWordInput);
     const debounce = setTimeout(() => {
-      getSearchResults(searchWordInput).then((data) => {
-        onSetSearchResult(data);
-      });
+      if (!searchResult) {
+        getSearchResults(searchWordInput).then((data) => {
+          searchResult = data;
+          onSetSearchResult(searchResult);
+          setCache(searchWordInput, searchResult);
+        });
+        return;
+      }
+      setSearchResult(searchResult);
     }, 500);
+
     return () => clearTimeout(debounce);
   }, [searchWordInput]);
 
@@ -52,7 +87,7 @@ function App() {
           onChangeSearchWordInput={onChangeSearchWordInput}
           onSubmit={onSubmit}
         />
-        {searchResult.length > 0 && (
+        {searchWordInput && (
           <ul
             role="tablist"
             className="rounded-2xl bg-white p-4 max-h-96 overflow-y-auto shadow-md"
@@ -61,17 +96,23 @@ function App() {
               <span className="mr-2 text-gray-600 text-lg">🔍︎</span>
               <span className="font-semibold">{searchWordInput}</span>
             </li>
-            <h3 className="text-gray-600 text-sm p-1 font-semibold mt-1">
-              추천 검색어
-            </h3>
-            {searchResult.map((result, index) => (
-              <SearchResultItem
-                key={index}
-                result={result}
-                searchWordInput={searchWordInput}
-                onChangeSearchWordInput={onChangeSearchWordInput}
-              />
-            ))}
+            {searchResult.length > 0 ? (
+              <>
+                <h3 className="text-gray-600 text-sm p-1 font-semibold mt-1">
+                  추천 검색어
+                </h3>
+                {searchResult.map((result, index) => (
+                  <SearchResultItem
+                    key={index}
+                    result={result}
+                    searchWordInput={searchWordInput}
+                    onChangeSearchWordInput={onChangeSearchWordInput}
+                  />
+                ))}
+              </>
+            ) : (
+              <p className="p-1">추천 검색어가 없습니다</p>
+            )}
           </ul>
         )}
       </div>
