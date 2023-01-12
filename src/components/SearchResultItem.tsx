@@ -20,11 +20,12 @@ function SearchResultItem({
     <button
       role="tab"
       key={result.sickCd}
-      className="w-full p-2 border-b last:border-0 cursor-pointer hover:bg-gray-100 focus-visible:bg-gray-100 text-start"
+      className="flex items-start sm:items-center w-full p-1 sm:p-2 border-b last:border-0 cursor-pointer hover:bg-gray-100 focus-visible:bg-gray-100 text-start"
       onClick={() => onChangeSearchWordInput(result.sickNm)}
     >
-      <span className="mr-2 text-gray-600 text-lg">🔍︎</span>
+      <span className="mr-1 sm:mr-2 text-gray-600 text-sm sm:text-lg">🔍︎</span>
       <span
+        className="text-sm sm:text-base flex-1"
         dangerouslySetInnerHTML={{
           __html: boldString(result.sickNm, searchWordInput),
         }}

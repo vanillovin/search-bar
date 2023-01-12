@@ -46,8 +46,8 @@ function App() {
 
   return (
     <div className="flex items-center justify-center w-full bg-blue-100">
-      <div className="bg-blue-100 p-10 rounded-sm w-full max-w-3xl">
-        <h2 className="font-extrabold text-center">
+      <div className="bg-blue-100 p-2 sm:p-10 rounded-sm w-full max-w-3xl">
+        <h2 className="font-extrabold text-center text-xl sm:text-3xl leading-normal">
           국내 모든 임상시험 검색하고
           <br /> 온라인으로 참여하기
         </h2>
@@ -59,11 +59,15 @@ function App() {
         {searchWordInput && (
           <ul
             role="tablist"
-            className="rounded-2xl bg-white p-4 max-h-96 overflow-y-auto shadow-md"
+            className="rounded-2xl bg-white p-3 sm:p-4 max-h-96 overflow-y-auto shadow-md"
           >
             <li className="p-1">
-              <span className="mr-2 text-gray-600 text-lg">🔍︎</span>
-              <span className="font-semibold">{searchWordInput}</span>
+              <span className="mr-1 sm:mr-2 text-gray-600 text-sm sm:text-lg">
+                🔍︎
+              </span>
+              <span className="font-semibold text-sm sm:text-base">
+                {searchWordInput}
+              </span>
             </li>
             {searchResult.length > 0 ? (
               <>
