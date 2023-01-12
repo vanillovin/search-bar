@@ -5,30 +5,14 @@ import type { ISearchResultItem } from './type';
 import SearchForm from './components/SearchForm';
 import SearchResultItem from './components/SearchResultItem';
 
-let cache: { [key: string]: ISearchResultItem[] } = {};
-
-const setCache = (searchWord: string, searchResult: ISearchResultItem[]) => {
-  // cache = {
-  //   ...cache,
-  //   [searchWord]: searchResult,
-  // };
-  cache[searchWord] = searchResult;
-};
-
-const getCache = (searchWord: string) => {
-  // const cacheSearchResult = cache[searchWord];
-  // if (!cacheSearchResult) throw Error('nothing cache search result');
-  return cache[searchWord];
-};
+type Cache = { [key: string]: ISearchResultItem[] };
 
 function App() {
   let timer: any;
   const [searchWordInput, setSearchWordInput] = useState('');
-  const [searchResult, setSearchResult] = useState<ISearchResultItem[]>([]);
+  const [cache, setCache] = useState<Cache>({ '': [] });
 
-  const onSetSearchResult = (newSearchResult: ISearchResultItem[]) => {
-    setSearchResult(newSearchResult);
-  };
+  const searchResult = cache[searchWordInput] ?? [];
 
   const onChangeSearchWordInput = (value: string) => {
     setSearchWordInput(value);
@@ -36,44 +20,29 @@ function App() {
 
   const onSubmit = () => {
     if (!searchWordInput) return;
-
+    if (searchResult.length) return;
     if (timer) clearTimeout(timer);
-
     timer = setTimeout(() => {
-      let searchReulst: ISearchResultItem[] = getCache(searchWordInput);
-      if (!searchReulst) {
-        getSearchResults(searchWordInput).then((data) => {
-          searchReulst = data;
-          setSearchResult(searchReulst);
-          setCache(searchWordInput, searchReulst);
-        });
-        return;
-      }
-      setSearchResult(searchReulst);
+      getSearchResults(searchWordInput).then((searchResult) => {
+        setCache((old) => ({ ...old, [searchWordInput]: searchResult }));
+      });
     }, 500);
   };
 
+  // TODO: 선언형으로 바꾸기
+  // 1. set에 빨간줄을 긋고 줄이자.
+  //   - 검색어가 없으면 searchResult는 빈 배열이다. -> 선언적인 코드가 될 수 있는 부분 (+캐시)
   useEffect(() => {
-    if (!searchWordInput) {
-      setSearchResult([]);
-      return;
-    }
-
-    let searchResult: ISearchResultItem[] = getCache(searchWordInput);
-    const debounce = setTimeout(() => {
-      if (!searchResult) {
-        getSearchResults(searchWordInput).then((data) => {
-          searchResult = data;
-          onSetSearchResult(searchResult);
-          setCache(searchWordInput, searchResult);
-        });
-        return;
-      }
-      setSearchResult(searchResult);
+    const timerId = setTimeout(() => {
+      if (!searchWordInput) return;
+      if (searchResult.length) return;
+      getSearchResults(searchWordInput).then((searchResult) => {
+        setCache((old) => ({ ...old, [searchWordInput]: searchResult }));
+      });
     }, 500);
 
-    return () => clearTimeout(debounce);
-  }, [searchWordInput]);
+    return () => clearTimeout(timerId);
+  }, [searchWordInput, setCache, searchResult.length]);
 
   return (
     <div className="flex items-center justify-center w-full bg-blue-100">
