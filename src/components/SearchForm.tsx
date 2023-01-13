@@ -1,19 +1,13 @@
 interface Props {
   searchWordInput: string;
   onChangeSearchWordInput: (value: string) => void;
-  onSubmit: () => void;
 }
 
-function SearchForm({
-  searchWordInput,
-  onChangeSearchWordInput,
-  onSubmit,
-}: Props) {
+function SearchForm({ searchWordInput, onChangeSearchWordInput }: Props) {
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit();
       }}
       className="rounded-full bg-white flex items-center mt-4 sm:mt-8 mb-2 sm:mb-4 shadow-md p-1 focus-within:border-2 border-blue-400"
     >
@@ -36,7 +30,6 @@ function SearchForm({
       )}
       <button
         type="submit"
-        onClick={onSubmit}
         className="bg-blue-400 text-white rounded-full text-sm sm:text-base w-10 sm:w-12 h-10 sm:h-12 font-semibold hover:bg-blue-500"
       >
         검색
